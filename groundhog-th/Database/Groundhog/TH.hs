@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell, RecordWildCards, CPP, PackageImports #-}
 
 -- | This module provides functions to generate the auxiliary structures for the user data type
 module Database.Groundhog.TH
@@ -43,10 +43,16 @@ import Control.Monad (forM, forM_, when, unless, liftM2)
 import Data.Char (isUpper, isLower, isSpace, isDigit, toUpper, toLower)
 import Data.List (nub, (\\))
 import Data.Maybe (fromMaybe, isJust, isNothing)
+
+#ifndef __GHCJS__
 import Data.String
 import Data.Text.Encoding (encodeUtf8)
-import Data.Yaml as Y (decodeHelper, ParseException(..))
+import "yaml" Data.Yaml as Y (decodeHelper, ParseException(..))
 import qualified Text.Libyaml as Y
+#else
+import Data.Text (pack)
+import qualified "yaml-ghcjs" Data.Yaml as YJS
+#endif
 
 data CodegenConfig = CodegenConfig {
   -- | Naming style that is applied for all definitions
@@ -575,6 +581,7 @@ groundhogFile = quoteFile groundhog
 
 parseDefinitions :: String -> Q Exp
 parseDefinitions s = do
+#ifndef __GHCJS__
   result <- runIO $ decodeHelper (Y.decode $ encodeUtf8 $ fromString s)
   case result of
     Left err -> case err of
@@ -588,6 +595,16 @@ parseDefinitions s = do
       _ -> fail $ show err
     Right (Left err) -> fail err
     Right (Right result') -> lift (result' :: PersistDefinitions)
+#else
+  res <- runIO $ do 
+    yamlParse <- YJS.decodeYaml (pack s)
+    case yamlParse of
+      Nothing -> fail "Bad yaml parse"
+      Just v  -> return (v :: PersistDefinitions)
+  lift (res :: PersistDefinitions)
+
+#endif
+
 
 defaultMkEntityDecs :: [THEntityDef] -> Q [Dec]
 defaultMkEntityDecs = fmap concat . mapM (\def -> do
