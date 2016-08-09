@@ -55,7 +55,7 @@ instance (PersistEntity v, DbDescriptor db, IsUniqueKey k, k ~ Key v (Unique u),
 instance (db' ~ db, r' ~ r) => Expression db' r' (Cond db r) where
   toExpr = ExprCond
 
-#if __GLASGOW_HASKELL__ >= 710
+#if __GLASGOW_HASKELL__ >= 910
 
 #else
 
@@ -71,10 +71,10 @@ class (Expression db r a, PersistField a') => ExpressionOf db r a a' | a -> a'
 
 instance (Expression db r a, Normalize HTrue a (flag, a'), PersistField a') => ExpressionOf db r a a'
 
-instance PurePersistField a => Expression db r a where
+instance {-# OVERLAPPING #-} PurePersistField a => Expression db r a where
   toExpr = ExprPure
 
-instance (PersistField a, db' ~ db, r' ~ r) => Expression db' r' (Expr db r a) where
+instance {-# OVERLAPPING #-} (PersistField a, db' ~ db, r' ~ r) => Expression db' r' (Expr db r a) where
   toExpr (Expr e) = e
 
 class Normalize counterpart t r | t -> r
@@ -84,7 +84,7 @@ instance r ~ (HFalse, a)               => Normalize HTrue  (Field v c a) r
 instance NormalizeValue a (isPlain, r) => Normalize HFalse (SubField db v c a) (HFalse, r)
 instance r ~ (HFalse, a)               => Normalize HTrue  (SubField db v c a) r
 instance NormalizeValue a (isPlain, r) => Normalize HFalse (Expr db r' a) (HFalse, r)
-instance r ~ (HFalse, a)               => Normalize HTrue  (Expr db r' a) r
+instance {-# OVERLAPPING #-} r ~ (HFalse, a)               => Normalize HTrue  (Expr db r' a) r
 instance NormalizeValue (Key v (Unique u)) (isPlain, r) => Normalize HFalse (u (UniqueMarker v)) (HFalse, r)
 instance r ~ (HFalse, Key v (Unique u))                 => Normalize HTrue  (u (UniqueMarker v)) r
 instance NormalizeValue (Key v BackendSpecific) (isPlain, r) => Normalize HFalse (AutoKeyField v c) (HFalse, r)
@@ -92,7 +92,7 @@ instance r ~ (HFalse, Key v BackendSpecific)                 => Normalize HTrue 
 instance r ~ (HTrue, Bool) => Normalize HFalse (Cond db r') r
 instance r ~ (HTrue, Bool) => Normalize HTrue  (Cond db r') r
 instance NormalizeValue t r => Normalize HFalse t r
-instance r ~ (HTrue, t)     => Normalize HTrue  t r
+instance {-# OVERLAPPING #-} r ~ (HTrue, t)     => Normalize HTrue  t r
 
 class NormalizeValue t r | t -> r
 -- Normalize @Key v u@ to @v@ only if this key is used for storing @v@.
