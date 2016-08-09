@@ -6,3 +6,4 @@ packages:
   groundhog-inspector
   groundhog-mysql
   groundhog-pipes
+  groundhog-test
