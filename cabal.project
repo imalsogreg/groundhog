@@ -1,0 +1,8 @@
+packages:
+  groundhog
+  groundhog-th
+  groundhog-postgresql
+  groundhog-sqlite
+  groundhog-inspector
+  groundhog-mysql
+  groundhog-pipes
