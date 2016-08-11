@@ -39,20 +39,20 @@ fieldHelper f = result where
   result = ExprField $ fieldChain db f
   db = (undefined :: UntypedExpr db r -> proxy db) result
 
-instance (EntityConstr v c, DbDescriptor db, PersistField a, RestrictionHolder v c ~ r') => Expression db r' (Field v c a) where
+instance {-# OVERLAPPING #-} (EntityConstr v c, DbDescriptor db, PersistField a, RestrictionHolder v c ~ r') => Expression db r' (Field v c a) where
   toExpr = fieldHelper
 
-instance (EntityConstr v c, DbDescriptor db, PersistField a, db' ~ db, RestrictionHolder v c ~ r') => Expression db' r' (SubField db v c a) where
+instance {-# OVERLAPPING #-} (EntityConstr v c, DbDescriptor db, PersistField a, db' ~ db, RestrictionHolder v c ~ r') => Expression db' r' (SubField db v c a) where
   toExpr = fieldHelper
 
-instance (EntityConstr v c, DbDescriptor db, RestrictionHolder v c ~ r') => Expression db r' (AutoKeyField v c) where
+instance {-# OVERLAPPING #-} (EntityConstr v c, DbDescriptor db, RestrictionHolder v c ~ r') => Expression db r' (AutoKeyField v c) where
   toExpr = fieldHelper
 
-instance (PersistEntity v, DbDescriptor db, IsUniqueKey k, k ~ Key v (Unique u), RestrictionHolder v c ~ r')
+instance {-# OVERLAPPING #-} (PersistEntity v, DbDescriptor db, IsUniqueKey k, k ~ Key v (Unique u), RestrictionHolder v c ~ r')
       => Expression db r' (u (UniqueMarker v)) where
   toExpr = fieldHelper
 
-instance (db' ~ db, r' ~ r) => Expression db' r' (Cond db r) where
+instance {-# OVERLAPPING #-} (db' ~ db, r' ~ r) => Expression db' r' (Cond db r) where
   toExpr = ExprCond
 
 #if __GLASGOW_HASKELL__ >= 910
